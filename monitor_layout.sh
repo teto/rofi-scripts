@@ -1,13 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-XRANDR=$(which xrandr)
+XRANDR=$(which wlr-randr)
 
 MONITORS=( $( ${XRANDR} | awk '( $2 == "connected" ){ print $1 }' ) )
 
 
 NUM_MONITORS=${#MONITORS[@]}
 
-TITLES=()
+declare -A TILES=()
 COMMANDS=()
 
 
@@ -17,9 +17,9 @@ function gen_xrandr_only()
 
     cmd="xrandr --output ${MONITORS[$selected]} --auto "
 
-    for entry in $(seq 0 $((${NUM_MONITORS}-1)))
+    for entry in $(seq 0 $((NUM_MONITORS-1)))
     do
-        if [ $selected != $entry ]
+        if [ "$selected" != "$entry" ]
         then
             cmd="$cmd --output ${MONITORS[$entry]} --off"
         fi
