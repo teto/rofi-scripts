@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-XRANDR=$(which xrandr)
+WLR_RANDR=$(which wlr-randr)
 
-MONITORS=( $( ${XRANDR} | awk '( $2 == "connected" ){ print $1 }' ) )
+MONITORS=( $( ${WLR_RANDR} | grep -E "^[^ ]+ " | awk '{print $1}' ) )
 
 
 NUM_MONITORS=${#MONITORS[@]}
@@ -11,11 +11,11 @@ TITLES=()
 COMMANDS=()
 
 
-function gen_xrandr_only()
+function gen_wlr_randr_only()
 {
     selected=$1
 
-    cmd="xrandr --output ${MONITORS[$selected]} --auto "
+    cmd="wlr-randr --output ${MONITORS[$selected]} --on "
 
     for entry in $(seq 0 $((${NUM_MONITORS}-1)))
     do
@@ -39,7 +39,7 @@ index+=1
 for entry in $(seq 0 $((${NUM_MONITORS}-1)))
 do
     TILES[$index]="Only ${MONITORS[$entry]}"
-    COMMANDS[$index]=$(gen_xrandr_only $entry)
+    COMMANDS[$index]=$(gen_wlr_randr_only $entry)
     index+=1
 done
 
@@ -53,8 +53,8 @@ do
         if [ $entry_a != $entry_b ]
         then
             TILES[$index]="Dual Screen ${MONITORS[$entry_a]} -> ${MONITORS[$entry_b]}"
-            COMMANDS[$index]="xrandr --output ${MONITORS[$entry_a]} --auto \
-                              --output ${MONITORS[$entry_b]} --auto --left-of ${MONITORS[$entry_a]}"
+            COMMANDS[$index]="wlr-randr --output ${MONITORS[$entry_b]} --on --pos 0,0 \
+                              --output ${MONITORS[$entry_a]} --on --pos 1920,0"
 
             index+=1
         fi
@@ -72,8 +72,8 @@ do
         if [ $entry_a != $entry_b ]
         then
             TILES[$index]="Clone Screen ${MONITORS[$entry_a]} -> ${MONITORS[$entry_b]}"
-            COMMANDS[$index]="xrandr --output ${MONITORS[$entry_a]} --auto \
-                              --output ${MONITORS[$entry_b]} --auto --same-as ${MONITORS[$entry_a]}"
+            COMMANDS[$index]="wlr-randr --output ${MONITORS[$entry_a]} --on --pos 0,0 \
+                              --output ${MONITORS[$entry_b]} --on --pos 0,0"
 
             index+=1
         fi
@@ -95,5 +95,5 @@ function gen_entries()
 # Call menu
 SEL=$( gen_entries | rofi -dmenu -p "Monitor Setup:" -a 0 -no-custom  | awk '{print $1}' )
 
-# Call xrandr
+# Call wlr-randr
 $( ${COMMANDS[$SEL]} )
